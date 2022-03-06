@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { Box } from '@mui/material';
+import React, { useEffect, useState, useCallback } from 'react';
+import { ChartParams } from '../API/types';
 import { useAPIContext } from './APIContext';
 import { Chart } from './Chart/Chart';
-import { ChartParams } from './ChartParams/ChartParams';
+import { ChartControls } from './ChartControls/ChartControls';
 import { ChartData } from './types';
+
+const boxStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '40px',
+};
 
 export const AppLayout: React.FC = () => {
   const { chartService } = useAPIContext();
@@ -10,25 +19,34 @@ export const AppLayout: React.FC = () => {
   const [chartParams, setChartParams] = useState({ from: -2, to: 2, step: 0.1 });
   const [chartData, setChartData] = useState<ChartData | undefined>(undefined);
 
-  useEffect(() => {
-    const loadData = async () => {
-      const chartDTO = await chartService.getChartPoints(chartParams);
+  const onParamsChange = async (newParams: ChartParams) => {
+    await loadData(newParams);
+  };
 
-      const data = chartDTO.reduce<ChartData>((chart, { name, x: xArray, y: yArray }) => {
+  const loadData = useCallback(
+    async (newChartParams) => {
+      const chartDTO = await chartService.getChartPoints(newChartParams);
+
+      const newData = chartDTO.reduce<ChartData>((chart, { name, x: xArray, y: yArray }) => {
         chart[name] = xArray.map((x, index) => ({ x, y: yArray[index] }));
         return chart;
       }, {} as ChartData);
 
-      setChartData(data);
-    };
+      setChartData(newData);
+      setChartParams(newChartParams);
+    },
+    [chartService.getChartPoints],
+  );
 
-    loadData();
-  }, [chartParams]);
+  useEffect(() => {
+    loadData(chartParams);
+  }, []);
 
   return (
-    <div>
-      <ChartParams />
+    <Box sx={boxStyle}>
+      <ChartControls chartParams={chartParams} onChange={onParamsChange} />
+      {/* TODO handle states: loading and error */}
       {chartData && <Chart chartData={chartData} />}
-    </div>
+    </Box>
   );
 };

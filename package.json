@@ -6,7 +6,7 @@
   "license": "ISC",
   "scripts": {
     "bootstrap": "yarn install",
-    "start": "webpack serve --config webpack.config.ts --open",
+    "start": "webpack serve --config webpack.config.ts --port 3000 --open",
     "build": "webpack --mode production --config webpack.config.ts",
     "serve": "http-server ./dist -p 3001 -o -c-1",
     "typecheck": "tsc",
@@ -14,6 +14,9 @@
     "clean": "rimraf dist/"
   },
   "dependencies": {
+    "@emotion/react": "^11.8.1",
+    "@emotion/styled": "^11.8.1",
+    "@mui/material": "^5.4.4",
     "core-js": "^3.21.1",
     "http-server": "^14.1.0",
     "react": "^17.0.2",
