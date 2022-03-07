@@ -1,8 +1,12 @@
 import { ChartDataDTO, ChartParams } from './types';
 
 export const calculateDataOnFrontend = ({ from, to, step }: ChartParams): ChartDataDTO[] => {
+  if (step === 0) {
+    throw new Error('"step" can not be 0');
+  }
+
   if (Math.abs(from) > 20 || Math.abs(to) > 20) {
-    throw new Error('invalid "from" or "to" parameter - the values must be in range -20 to 20.');
+    throw new Error('invalid "from" or "to" parameter - the values must be in range -20 to 20');
   }
 
   if ((from < to && step < 0) || (from > to && step > 0)) {

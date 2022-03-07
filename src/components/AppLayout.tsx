@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import React, { useEffect, useState, useCallback } from 'react';
 import { ChartParams } from '../API/types';
 import { useAPIContext } from './APIContext';
@@ -6,11 +6,18 @@ import { Chart } from './Chart/Chart';
 import { ChartControls } from './ChartControls/ChartControls';
 import { ChartData } from './types';
 
-const boxStyle = {
+const rootStyle = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '40px',
+};
+
+const paramsWrapper = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '10px',
 };
 
 export const AppLayout: React.FC = () => {
@@ -18,6 +25,8 @@ export const AppLayout: React.FC = () => {
 
   const [chartParams, setChartParams] = useState({ from: -2, to: 2, step: 0.1 });
   const [chartData, setChartData] = useState<ChartData | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const onParamsChange = async (newParams: ChartParams) => {
     await loadData(newParams);
@@ -25,15 +34,24 @@ export const AppLayout: React.FC = () => {
 
   const loadData = useCallback(
     async (newChartParams) => {
-      const chartDTO = await chartService.getChartPoints(newChartParams);
+      setIsLoading(true);
+      setError(undefined);
 
-      const newData = chartDTO.reduce<ChartData>((chart, { name, x: xArray, y: yArray }) => {
-        chart[name] = xArray.map((x, index) => ({ x, y: yArray[index] }));
-        return chart;
-      }, {} as ChartData);
+      try {
+        const chartDTO = await chartService.getChartPoints(newChartParams);
 
-      setChartData(newData);
-      setChartParams(newChartParams);
+        const newData = chartDTO.reduce<ChartData>((chart, { name, x: xArray, y: yArray }) => {
+          chart[name] = xArray.map((x, index) => ({ x, y: yArray[index] }));
+          return chart;
+        }, {} as ChartData);
+
+        setChartData(newData);
+        setChartParams(newChartParams);
+      } catch (e) {
+        setError(String(e));
+      } finally {
+        setIsLoading(false);
+      }
     },
     [chartService.getChartPoints],
   );
@@ -43,10 +61,16 @@ export const AppLayout: React.FC = () => {
   }, []);
 
   return (
-    <Box sx={boxStyle}>
-      <ChartControls chartParams={chartParams} onChange={onParamsChange} />
-      {/* TODO handle states: loading and error */}
-      {chartData && <Chart chartData={chartData} />}
+    <Box sx={rootStyle}>
+      <Box sx={paramsWrapper}>
+        <ChartControls chartParams={chartParams} onChange={onParamsChange} />
+        {error && (
+          <Typography color="red" variant="caption">
+            {error}
+          </Typography>
+        )}
+      </Box>
+      {!isLoading && chartData ? <Chart chartData={chartData} /> : <CircularProgress />}
     </Box>
   );
 };

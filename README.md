@@ -35,8 +35,4 @@ yarn serve
 To work correctly the project needs correct backend endpoint exposed: http://localhost:8080/points . If not present, the app will always display the same mocked data set.
 
 ### TODO
-- Test with different data sets
-- Test on Safari
 - Add unit tests
-- Improve styling
-- Resolve TODOs from the code base
