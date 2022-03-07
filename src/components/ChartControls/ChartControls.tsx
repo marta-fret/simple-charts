@@ -1,15 +1,24 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Input from '@mui/material/Input';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { ChartParams } from '../../API/types';
+import { Typography } from '@mui/material';
+import { CurrentParamValue } from './CurrentParamValue';
 
-const boxStyle = {
+const rootStyle = {
   display: 'grid',
-  gridTemplateColumns: '200px 100px 100px 100px',
+  gridTemplateColumns: '120px 100px 100px 100px',
   gridGap: '10px',
   backgroundColor: '#fff',
   fontFamily: 'Arial',
+};
+
+const inputStyle = {
+  '& > input': {
+    textAlign: 'center',
+    paddingLeft: '10px',
+  },
 };
 
 interface ChartControlsProps {
@@ -21,6 +30,11 @@ export const ChartControls: React.FC<ChartControlsProps> = ({ chartParams, onCha
   const [newFrom, setNewFrom] = useState(chartParams.from);
   const [newTo, setNewTo] = useState(chartParams.to);
   const [newStep, setNewStep] = useState(chartParams.step);
+
+  const applyDisabled = useMemo(() => {
+    const { from, to, step } = chartParams;
+    return !(newFrom !== from || newTo !== to || newStep !== step);
+  }, [chartParams, newFrom, newTo, newStep]);
 
   const newFromHandler = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setNewFrom(Number(e.target.value)),
@@ -45,25 +59,38 @@ export const ChartControls: React.FC<ChartControlsProps> = ({ chartParams, onCha
   }, [chartParams]);
 
   return (
-    <Box sx={boxStyle}>
-      <span>CHART PARAMETERS</span>
-      <span>From</span>
-      <span>To</span>
-      <span>Step</span>
-      <span>CURRENT</span>
-      <span>{chartParams.from}</span>
-      <span>{chartParams.to}</span>
-      <span>{chartParams.step}</span>
+    <Box sx={rootStyle}>
+      <span></span>
+      <Typography align="center" variant="subtitle2">
+        FROM
+      </Typography>
+      <Typography align="center" variant="subtitle2">
+        TO
+      </Typography>
+      <Typography align="center" variant="subtitle2">
+        STEP
+      </Typography>
+
+      <Typography variant="caption">CURRENT PARAMS</Typography>
+      <CurrentParamValue value={chartParams.from} />
+      <CurrentParamValue value={chartParams.to} />
+      <CurrentParamValue value={chartParams.step} />
+
       <Box>
-        {/* TODO Should be disabled when data same as in current settings */}
-        <Button variant="outlined" onClick={onApply}>
+        <Button variant="outlined" onClick={onApply} disabled={applyDisabled}>
           APPLY NEW
         </Button>
       </Box>
-      {/* TODO Validation rules should be added, so that values makes sense together and density of resulted data is not to big */}
-      <Input type="number" value={newFrom} onChange={newFromHandler} inputProps={{ min: -50, max: -1 }} />
-      <Input type="number" value={newTo} onChange={newToHandler} inputProps={{ min: 1, max: 50 }} />
-      <Input type="number" value={newStep} onChange={newStepHandler} inputProps={{ step: 0.1, min: 0.1, max: 1 }} />
+      {/* TODO Validation warnings should be shown on frontend and button should be disabled when errors present*/}
+      <Input
+        type="number"
+        value={newFrom}
+        onChange={newFromHandler}
+        inputProps={{ min: -20, max: 20 }}
+        sx={inputStyle}
+      />
+      <Input type="number" value={newTo} onChange={newToHandler} inputProps={{ min: -20, max: 20 }} sx={inputStyle} />
+      <Input type="number" value={newStep} onChange={newStepHandler} inputProps={{ step: 0.1 }} sx={inputStyle} />
     </Box>
   );
 };
