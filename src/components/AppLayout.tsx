@@ -13,13 +13,6 @@ const rootStyle = {
   gap: '40px',
 };
 
-const paramsWrapper = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '10px',
-};
-
 export const AppLayout: React.FC = () => {
   const { chartService } = useAPIContext();
 
@@ -62,10 +55,10 @@ export const AppLayout: React.FC = () => {
 
   return (
     <Box sx={rootStyle}>
-      <Box sx={paramsWrapper}>
+      <Box>
         <ChartControls chartParams={chartParams} onChange={onParamsChange} />
         {error && (
-          <Typography color="red" variant="caption">
+          <Typography color="red" variant="caption" component="p" align="center">
             {error}
           </Typography>
         )}
